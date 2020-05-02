@@ -2,9 +2,10 @@ version: '2'
 services:
 
   chrome:
-    image: selenium/standalone-chrome-debug
+    build: .
+#    image: selenium/standalone-chrome-debug
     volumes:
       - /dev/shm:/dev/shm
     ports:
-      - "4444:4444"
-      - "5900:5900"
+      - "4444:4444" # Selenium Hub port
+      - "5900:5900" # VNC port
