@@ -4,6 +4,7 @@ services:
   chrome:
     build: .
 #    image: selenium/standalone-chrome-debug
+    container_name: docker_chrome
     volumes:
       - /dev/shm:/dev/shm
     ports:
