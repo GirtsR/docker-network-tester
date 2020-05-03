@@ -10,6 +10,7 @@ module.exports = {
    * @returns {Promise<any>} - Resolves the Promise with the command output or rejects it with the error message of the command
    */
   executeCommand: (command, workingDirectory = '.') => {
+    console.log(`Executing command: ${command}`);
     return new Promise((resolve, reject) => {
       childProcess.exec(command, { cwd: workingDirectory }, (error, stdout) => {
         if (error) {

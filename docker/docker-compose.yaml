@@ -3,7 +3,7 @@ services:
 
   chrome:
     build: .
-#    image: selenium/standalone-chrome-debug
+    privileged: true
     container_name: docker_chrome
     volumes:
       - /dev/shm:/dev/shm

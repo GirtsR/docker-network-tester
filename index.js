@@ -4,8 +4,17 @@ const Selenium = require('selenium-webdriver');
 const Chrome = require('selenium-webdriver/chrome');
 const Docker = require('./docker');
 const { sleep } = require('./helpers/sleep');
+const { program } = require('commander');
 
 const DEFAULT_TIMEOUT = 30000;
+
+// Initialize command line options
+program
+  .option('-b, --bandwidth <value>', 'Set outgoing bandwidth in kilo/mega bits per second (e.g. 128kbps)')
+  .option('-l, --packetLoss <value>', 'Set packet loss value in percent (e.g. 20)')
+  .option('-d, --packetDelay <value>', 'Set packet delay in milliseconds (e.g. 200ms)')
+  .option('-j, --jitter <value>', 'Set jitter in milliseconds (e.g. 20ms)');
+program.parse(process.argv);
 
 runTest().catch(error => {
   // Catch any error that is thrown in the test and exit the process
@@ -14,12 +23,16 @@ runTest().catch(error => {
 });
 
 async function runTest() {
-  // Run the test in a try-catch block to throw any errors that arise
+  // Build and run the Docker image
   await Docker.buildImage();
-  const containerName = await Docker.runImage();
+  const containerName = await Docker.runContainer();
 
+  console.log(containerName);
   // TODO - wait for the Selenium service to start
   await sleep(3000);
+
+  // Set network limitations that were passed from the command Line
+  await setNetworkLimitations(containerName);
 
   // Create the Selenium WebDriver
   const driver = await new Selenium.Builder()
@@ -44,6 +57,30 @@ async function runTest() {
   console.log("Clicked!");
   await driver.sleep(DEFAULT_TIMEOUT);
   await driver.quit();
+}
+
+async function setNetworkLimitations(containerName) {
+  let ruleSet = '';
+  if (typeof program.bandwidth !== 'undefined') {
+    ruleSet += ` --rate ${program.bandwidth}`;
+  }
+  if (typeof program.packetLoss !== 'undefined') {
+    ruleSet += ` --loss ${program.packetLoss}`;
+  }
+  if (typeof program.packetDelay !== 'undefined') {
+    ruleSet += ` --delay ${program.packetDelay}`;
+    if (typeof program.jitter !== 'undefined') {
+      ruleSet += ` --delay-distro ${program.jitter}`;
+    }
+  } else if (typeof program.jitter !== 'undefined') {
+    throw new Error('Jitter cannot be defined without defining packet delay');
+  }
+  if (ruleSet === '') {
+    console.log('No network limitations set');
+  } else {
+    const commandToExecute = `tcset eth0${ruleSet}`;
+    await Docker.executeCommand(containerName, commandToExecute);
+  }
 }
 
 function buildChromeOptions() {
