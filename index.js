@@ -42,7 +42,7 @@ async function runTest() {
   .build();
 
   // Start the test
-  await driver.get('https://3a27acac.ngrok.io/quickstart/?roomName=test&identity=docker_chrome');
+  await driver.get('https://cb079c01.ngrok.io/quickstart/?roomName=test&identity=docker_chrome');
   console.log("Loaded!");
   await driver.wait(Selenium.until.elementLocated(Selenium.By.id('join-room')), DEFAULT_TIMEOUT);
   console.log("Found!");
@@ -56,6 +56,8 @@ async function runTest() {
   await driver.findElement(Selenium.By.id('join-button')).click();
   console.log("Clicked!");
   await driver.sleep(DEFAULT_TIMEOUT);
+  // Disconnect from the room after the test ends
+  await driver.findElement(Selenium.By.id('leave-room')).click();
   await driver.quit();
 }
 

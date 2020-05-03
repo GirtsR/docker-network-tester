@@ -35,7 +35,7 @@ const connectOptions = {
   dominantSpeaker: true,
 
   // Comment this line to disable verbose logging.
-  logLevel: 'debug',
+  logLevel: 'off',
 
   // Comment this line if you are playing music.
   // maxAudioBitrate: 16000,

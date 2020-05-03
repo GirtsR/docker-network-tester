@@ -230,6 +230,8 @@ async function joinRoom(token, connectOptions) {
   // Handle the LocalParticipant's media.
   participantConnected(room.localParticipant, room);
 
+  let interval;
+
   // Subscribe to the media published by RemoteParticipants already in the Room.
   room.participants.forEach(participant => {
     participantConnected(participant, room);
@@ -238,11 +240,15 @@ async function joinRoom(token, connectOptions) {
   // Subscribe to the media published by RemoteParticipants joining the Room later.
   room.on('participantConnected', participant => {
     participantConnected(participant, room);
+    // Start getting stats reports every second
+    interval = setInterval(gatherRemoteTrackStats, 1000);
   });
 
   // Handle a disconnected RemoteParticipant.
   room.on('participantDisconnected', participant => {
     participantDisconnected(participant, room);
+    console.log('Remote participant disconnected, stopping stats gathering');
+    clearInterval(interval);
   });
 
   // Set the current active Participant.
@@ -328,6 +334,26 @@ async function joinRoom(token, connectOptions) {
       }
     });
   });
+}
+
+const statsReports = {
+  remoteAudioReports: [],
+  remoteVideoReports: []
+};
+window.statsReports = statsReports;
+async function gatherRemoteTrackStats() {
+  console.log('Gathering remote audio and video track stats');
+  const stats = await window.room.getStats();
+  if (typeof stats[0] !== 'undefined') {
+   if (typeof stats[0].remoteAudioTrackStats[0] !== 'undefined') {
+     const remoteAudioTrackStats = stats[0].remoteAudioTrackStats[0];
+     statsReports.remoteAudioReports.push(remoteAudioTrackStats);
+   }
+   if (typeof stats[0].remoteVideoTrackStats[0] !== 'undefined') {
+     const remoteVideoTrackStats = stats[0].remoteVideoTrackStats[0];
+     statsReports.remoteVideoReports.push(remoteVideoTrackStats);
+   }
+  }
 }
 
 module.exports = joinRoom;
