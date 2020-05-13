@@ -21,6 +21,12 @@ module.exports = {
       throw new Error(`Could not run the Docker container. Error: ${error}`);
     });
   },
+  killContainer: async (containerName) => {
+    const command = 'docker-compose kill';
+    await executeCommand(command, __dirname).catch(error => {
+      throw new Error(`Could not kill the Docker container ${containerName}. Error: ${error}`);
+    });
+  },
   executeCommand: async (containerName, commandToExecute) => {
     const command = `docker exec ${containerName} ${commandToExecute}`;
     await executeCommand(command, __dirname).then(stdout => {

@@ -218,8 +218,17 @@ function trackPublished(publication, participant) {
  * @param connectOptions - the ConnectOptions used to join a Room
  */
 async function joinRoom(token, connectOptions) {
+  // Set the start time before connecting
+  const start = Date.now();
+
   // Join to the Room with the given AccessToken and ConnectOptions.
   const room = await connect(token, connectOptions);
+
+  // Calculate the conect time in milliseconds
+  const connectTime = (Date.now() - start);
+  // Add a container for the Participant's media.
+  const $connectTimeElem = $(`<p id="connect-time">${connectTime}</p>`);
+  $room.append($connectTimeElem);
 
   // Save the LocalVideoTrack.
   let localVideoTrack = Array.from(room.localParticipant.videoTracks.values())[0].track;

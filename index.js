@@ -10,6 +10,7 @@ const DEFAULT_TIMEOUT = 30000;
 
 // Initialize command line options
 program
+  .requiredOption('-a, --address <address>', 'Ngrok tunnel address of the Twilio SDK server')
   .option('-b, --bandwidth <value>', 'Set outgoing bandwidth in kilo/mega bits per second (e.g. 128kbps)')
   .option('-l, --packetLoss <value>', 'Set packet loss value in percent (e.g. 20)')
   .option('-d, --packetDelay <value>', 'Set packet delay in milliseconds (e.g. 200ms)')
@@ -28,12 +29,13 @@ async function runTest() {
   const containerName = await Docker.runContainer();
 
   console.log(containerName);
-  // TODO - wait for the Selenium service to start
-  await sleep(3000);
+  // Wait 5 seconds for the Selenium service to start
+  await sleep(5000);
 
   // Set network limitations that were passed from the command Line
   await setNetworkLimitations(containerName);
 
+  console.log('Starting the test...');
   // Create the Selenium WebDriver
   const driver = await new Selenium.Builder()
   .setChromeOptions(buildChromeOptions())
@@ -41,24 +43,30 @@ async function runTest() {
   .forBrowser('chrome')
   .build();
 
-  // Start the test
-  await driver.get('https://cb079c01.ngrok.io/quickstart/?roomName=test&identity=docker_chrome');
-  console.log("Loaded!");
+  // Connect to the Twilio Video quickstart page
+  await driver.get(`${program.address}/quickstart/?roomName=test&identity=docker_chrome`);
+  console.log("Page loaded");
   await driver.wait(Selenium.until.elementLocated(Selenium.By.id('join-room')), DEFAULT_TIMEOUT);
-  console.log("Found!");
   // Find the join room menu and wait until it is visible
   const joinRoomMenu = await driver.findElement(Selenium.By.id('join-room'));
   await driver.wait(Selenium.until.elementIsVisible(joinRoomMenu), DEFAULT_TIMEOUT);
-  console.log("Visible!");
-  // TODO - understand why clicking does not work immediately
+  // Wait for 1 second to click the element
   await sleep(1000);
   // Click the Join button
   await driver.findElement(Selenium.By.id('join-button')).click();
-  console.log("Clicked!");
+  console.log("Room joined");
   await driver.sleep(DEFAULT_TIMEOUT);
+  // Get the connection time from the page
+  const connectTime = await driver.findElement(Selenium.By.id('connect-time')).getText();
   // Disconnect from the room after the test ends
   await driver.findElement(Selenium.By.id('leave-room')).click();
   await driver.quit();
+
+  console.log('Test finished!');
+  console.log(`Connection time: ${connectTime} milliseconds`);
+
+  // Kill the Docker image
+  await Docker.killContainer(containerName);
 }
 
 async function setNetworkLimitations(containerName) {
