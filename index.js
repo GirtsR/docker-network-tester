@@ -7,6 +7,8 @@ const { sleep } = require('./helpers/sleep');
 const { program } = require('commander');
 
 const DEFAULT_TIMEOUT = 30000;
+// Room test duration: 60 seconds
+const ROOM_DURATION = 60000;
 
 // Initialize command line options
 program
@@ -55,7 +57,7 @@ async function runTest() {
   // Click the Join button
   await driver.findElement(Selenium.By.id('join-button')).click();
   console.log("Room joined");
-  await driver.sleep(DEFAULT_TIMEOUT);
+  await driver.sleep(ROOM_DURATION);
   // Get the connection time from the page
   const connectTime = await driver.findElement(Selenium.By.id('connect-time')).getText();
   // Disconnect from the room after the test ends
