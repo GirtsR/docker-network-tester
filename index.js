@@ -6,6 +6,7 @@ const Docker = require('./docker');
 const { sleep } = require('./helpers/sleep');
 const { program } = require('commander');
 
+// Default timeout for Selenium commands: 30 seconds
 const DEFAULT_TIMEOUT = 30000;
 // Room test duration: 60 seconds
 const ROOM_DURATION = 60000;
@@ -14,7 +15,7 @@ const ROOM_DURATION = 60000;
 program
   .requiredOption('-a, --address <address>', 'Ngrok tunnel address of the Twilio SDK server')
   .option('-b, --bandwidth <value>', 'Set outgoing bandwidth in kilo/mega bits per second (e.g. 128kbps)')
-  .option('-l, --packetLoss <value>', 'Set packet loss value in percent (e.g. 20)')
+  .option('-l, --packetLoss <value>', 'Set packet loss value in percent (e.g. 20%)')
   .option('-d, --packetDelay <value>', 'Set packet delay in milliseconds (e.g. 200ms)')
   .option('-j, --jitter <value>', 'Set jitter in milliseconds (e.g. 20ms)');
 program.parse(process.argv);
@@ -90,7 +91,8 @@ async function setNetworkLimitations(containerName) {
   if (ruleSet === '') {
     console.log('No network limitations set');
   } else {
-    const commandToExecute = `tcset eth0${ruleSet}`;
+    const portExclusion = `--exclude-src-port 4444`; // Do not limit traffic for Selenium connection on port 4444
+    const commandToExecute = `tcset eth0${ruleSet} ${portExclusion}`;
     await Docker.executeCommand(containerName, commandToExecute);
   }
 }
