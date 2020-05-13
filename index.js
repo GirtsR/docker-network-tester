@@ -98,8 +98,7 @@ function buildChromeOptions() {
   // Fake video/audio streams
   chromeOptions.addArguments('--use-fake-ui-for-media-stream');
   chromeOptions.addArguments('--use-fake-device-for-media-stream');
-  // File access from the browser
-  chromeOptions.addArguments('--allow-file-access');
+  // Additional options for video/audio permissions
   chromeOptions.addArguments('--disable-web-security');
   chromeOptions.addArguments('--allow-running-insecure-content');
   chromeOptions.addArguments('--allow-insecure-localhost');
