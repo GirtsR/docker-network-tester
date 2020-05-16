@@ -24,7 +24,7 @@ module.exports = {
     } else {
       const portExclusion = `--exclude-src-port 4444`; // Do not limit traffic for Selenium connection on port 4444
       const commandToExecute = `tcset eth0${ruleSet} ${portExclusion}`;
-      await Docker.executeCommand(containerName, commandToExecute);
+      await Docker.executeDockerCommand(containerName, commandToExecute);
     }
   }
 };
