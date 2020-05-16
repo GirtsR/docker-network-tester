@@ -226,8 +226,9 @@ async function joinRoom(token, connectOptions) {
 
   // Calculate the conect time in milliseconds
   const connectTime = (Date.now() - start);
-  // Add a container for the Participant's media.
+  // Create a container the connect time measurement
   const $connectTimeElem = $(`<p id="connect-time">${connectTime}</p>`);
+  // Append the container to the room element in the page
   $room.append($connectTimeElem);
 
   // Save the LocalVideoTrack.
